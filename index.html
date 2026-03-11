@@ -163,13 +163,13 @@
   <!-- HOME -->
   <div class="view active" id="view-home">
     <div class="home-hero">
-      <h1>Cabinet and FOSC Access Portal</h1>
+      <h1>Cabinet Access Portal</h1>
       <p>Submit access requests for OLT Cabinets and FOSC units across the network</p>
     </div>
     <div class="card-grid">
       <div class="request-card" onclick="showView('oltForm')">
         <div class="card-icon">
-          <img src="https://www.seeclearfield.com/dynamic-media/assets/images/fiberflex-2000-open.png?v=childListing&k=ivm0NrK0ueoxWstNDwenLA"
+          <img src="https://storage.litelinxfiber.com/storage/v1/object/public/product-images/olt-cabinet.jpg"
                alt="OLT" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
           <span class="fallback" style="display:none">🔧</span>
         </div>
@@ -567,15 +567,29 @@ function switchTab(t) {
 async function loadAdminData() {
   document.getElementById('refreshSpinner').style.display = 'inline-block';
   try {
-    const res = await fetch(CONFIG.getPending_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:sessionPassword}) });
-    if (!res.ok) throw new Error('Server error');
-    const data = await res.json();
+    const pwd = sessionPassword;
+    const res = await fetch(CONFIG.getPending_URL, { 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body:JSON.stringify({password:pwd}) 
+    });
     document.getElementById('refreshSpinner').style.display = 'none';
+    if (!res.ok) {
+      showToast('Failed to load: ' + res.status, 'error');
+      return;
+    }
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } 
+    catch(e) { showToast('Invalid response from server', 'error'); return; }
     renderAdminList(data.olt||[], 'oltRequestList', 'OLT');
     renderAdminList(data.fosc||[], 'foscRequestList', 'FOSC');
     document.getElementById('olt-count').textContent  = (data.olt||[]).length;
     document.getElementById('fosc-count').textContent = (data.fosc||[]).length;
-  } catch(e) { document.getElementById('refreshSpinner').style.display='none'; showToast('Failed to load: '+e.message,'error'); }
+  } catch(e) { 
+    document.getElementById('refreshSpinner').style.display='none'; 
+    showToast('Failed to load: '+e.message,'error'); 
+  }
 }
 
 function renderAdminList(items, cid, type) {
