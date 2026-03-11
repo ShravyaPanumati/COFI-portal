@@ -169,7 +169,7 @@
     <div class="card-grid">
       <div class="request-card" onclick="showView('oltForm')">
         <div class="card-icon">
-          <img src="olt-cabinet.png"
+          <img src="https://storage.litelinxfiber.com/storage/v1/object/public/product-images/olt-cabinet.jpg"
                alt="OLT" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
           <span class="fallback" style="display:none">🔧</span>
         </div>
@@ -596,7 +596,7 @@ function renderAdminList(items, cid, type) {
   const c = document.getElementById(cid);
   if (!items.length) { c.innerHTML='<div class="empty-state"><div class="icon">✅</div><p>No pending requests</p></div>'; return; }
   c.innerHTML = items.map(r => `
-    <div class="request-item" id="${type}-item-${r.rowNumber}">
+    <div class="request-item" data-row-id="${type}-${r.rowNumber}">
       <div class="request-item-top">
         <div class="request-item-title">${r.identifier}${type==='FOSC'?` <span style="color:#777">@ ${r.oltName}</span>`:''}</div>
         <span class="badge badge-pending">Pending</span>
@@ -636,7 +636,7 @@ async function confirmAction() {
     const res = await fetch(CONFIG.updateStatus_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({listType,rowNumber,action,notes,password:sessionPassword}) });
     if (!res.ok) throw new Error('Server error');
     showToast(`Request ${action.toLowerCase()} successfully.`);
-    const el = document.getElementById(listType+'-item-'+rowNumber);
+    const el = document.querySelector('[data-row-id="'+listType+'-'+rowNumber+'"]');
     if (el) el.remove();
     const ce = document.getElementById(listType.toLowerCase()+'-count');
     if (ce) ce.textContent = Math.max(0, parseInt(ce.textContent||'0')-1);
